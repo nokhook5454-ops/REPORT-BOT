@@ -49,6 +49,24 @@ class WebhookTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.text, "REPORT BOT is running")
 
+    def test_v1_ingestion_receives_event_without_legacy_storage(self):
+        from unittest.mock import Mock
+        self.repository.ingest = Mock(return_value=False)
+        event = {'type':'message','source':{'type':'group','groupId':'unknown'},
+                 'message':{'id':'ignored','type':'text','text':'รับทราบครับ'}}
+        self.assertEqual(self.post({'events':[event]}).status_code,200)
+        self.repository.ingest.assert_called_once()
+        self.assertEqual(self.repository.reports,[])
+
+    def test_v1_webhook_never_uploads_synchronously(self):
+        from unittest.mock import Mock
+        self.repository.ingest = Mock(return_value=True)
+        event = {'type':'message','source':{'type':'group','groupId':'Ctest'},
+                 'message':{'id':'media','type':'file'}}
+        with patch('drive_storage.GoogleDriveUploader.upload_report',side_effect=RuntimeError('private')) as upload:
+            self.assertEqual(self.post({'events':[event]}).status_code,200)
+            upload.assert_not_called()
+
     def test_empty_verify(self):
         response = self.post({"events": []})
         self.assertEqual(response.status_code, 200)
