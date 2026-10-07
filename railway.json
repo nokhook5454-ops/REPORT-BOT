@@ -1,7 +1,7 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "deploy": {
-    "startCommand": "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 30 --error-logfile -",
+    "startCommand": "gunicorn -c gunicorn.conf.py app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 30 --error-logfile -",
     "healthcheckPath": "/",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",

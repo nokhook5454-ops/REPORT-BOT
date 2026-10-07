@@ -9,3 +9,7 @@ __pycache__/
 *.log
 .idea/
 .vscode/
+.secrets/
+client_secret*.json
+credentials*.json
+token*.json
