@@ -39,6 +39,8 @@ class ReportRepository:
     def __init__(self, database_url):
         self.database_url = database_url
         self._ready = False
+        from data_repository import DataRepository
+        self.data_logic = DataRepository(self._connect)
 
     def _connect(self):
         import psycopg
@@ -97,6 +99,9 @@ class ReportRepository:
                 logging.getLogger("report_bot").info("drive uploaded report_id=%s file_id=%s", report["id"], file_id)
         return True
 
+    def ingest(self, event, received_at):
+        return self.data_logic.ingest(event, received_at)
+
 
 def create_app(repository=None):
     app = Flask(__name__)
@@ -126,6 +131,11 @@ def create_app(repository=None):
         return json.dumps(value[:2000], ensure_ascii=True)
 
     def process_event(event):
+        if event.get('type') == 'join':
+            source = event.get('source') or {}
+            if isinstance(source, dict) and source.get('type') == 'group':
+                logger.info('group_joined group_id=%s allowlist_required=true', safe_value(source.get('groupId')))
+            return
         if event.get("type") != "message" or not isinstance(event.get("message"), dict):
             return
         message, source = event["message"], event.get("source") or {}
@@ -141,6 +151,10 @@ def create_app(repository=None):
         drive_file_id = drive_url = None
         timestamp = event.get("timestamp")
         received_at = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc) if isinstance(timestamp, (int, float)) else datetime.now(timezone.utc)
+        if hasattr(repository, 'ingest'):
+            stored = repository.ingest(event, received_at)
+            logger.info('event_processed message_id=%s group_id=%s stored=%s', safe_value(message_id), safe_value(source.get('groupId')), stored)
+            return
         report = {
             "webhook_event_id": event.get("webhookEventId") or "line:{}".format(message_id), "line_message_id": message_id,
             "source_type": source.get("type") or "unknown", "group_id": source.get("groupId"),

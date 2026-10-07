@@ -98,3 +98,6 @@ PostgreSQL integration tests ใช้ฐานข้อมูลทดสอบ
 ข้อมูลใหม่เริ่มเก็บหลัง deploy นี้ Logs ของ v1 ไม่ได้ถูกนำเข้า DB ย้อนหลัง PostgreSQL volume ไม่ใช่ backup ควรตั้ง backup ใน Railway ตามข้อมูลที่ต้องเก็บ
 
 อ้างอิง: [Google OAuth Desktop](https://developers.google.com/identity/protocols/oauth2/native-app), [Google OAuth token expiry](https://developers.google.com/identity/protocols/oauth2), [LINE Content API](https://developers.line.biz/en/reference/messaging-api/#get-content), [Railway PostgreSQL](https://docs.railway.com/databases/postgresql)
+# Data Logic v1
+
+See [DATA_LOGIC_V1.md](DATA_LOGIC_V1.md) for the active group allowlist, migration, configuration, tests and deployment preparation. The instructions below describe the original collector; new ingestion uses the v1 allowlist and ignores ordinary conversation.
